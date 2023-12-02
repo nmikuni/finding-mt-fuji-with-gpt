@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  finding-mt-fuji-with-gpt
+
+Parameters:
+  soracomAuthKeyId:
+    Type: String
+    Default: "keyId-xxxxxxx"
+  soracomAuthKey:
+    Type: String
+    Default: "secret-xxxxxx"
+  deviceId:
+    Type: String
+    Default: "XXXXXXXXXXXX"
+  slackBotToken:
+    Type: String
+    Default: "replace it to your own token"
+  slackChannelId:
+    Type: String
+    Default: "replace it to your own ID"
+  openAiApiKey:
+    Type: String
+    Default: "replace it to your own API Key"
+
+
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+
+Resources:
+  FindingFujiHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: finding-mt-fuji-with-gpt
+      CodeUri: src/finding_fuji/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Environment:
+        Variables:
+          SORACOM_AUTH_KEY_ID: !Ref soracomAuthKeyId
+          SORACOM_AUTH_KEY: !Ref soracomAuthKey
+          DEVICE_ID: !Ref deviceId
+          SLACK_BOT_TOKEN: !Ref slackBotToken
+          SLACK_CHANNEL_ID: !Ref slackChannelId
+          OPENAI_API_KEY: !Ref openAiApiKey
+
+
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:717257875195:layer:soracom-cli-0130:1
+      Role: !GetAtt FindingFujiHandlerRole.Arn
+      Events:
+        Timer: 
+          Type: Schedule
+          Properties:
+            Name: finding-mt-fuji-with-gpt-schedule-first
+            # Every 6:30 AM JST
+            Schedule: cron(30 21 * * ? *)
+  
+  FindingFujiHandlerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRole"
+            Principal:
+              Service: lambda.amazonaws.com
+      Policies:
+        - PolicyName: "finding-mt-fuji-with-gpt-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
