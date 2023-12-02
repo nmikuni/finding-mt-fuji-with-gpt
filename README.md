@@ -4,7 +4,7 @@ This project aims to detect Mt. Fuji in images using OpenAI's GPT model. The app
 
 ## Project Structure
 
-- [app.py](src/finding_fuji/app.py)` contains the core logic for image processing and Slack integration.
+- [app.py](src/finding_fuji/app.py) contains the core logic for image processing and Slack integration.
 - [requirements.txt](src/finding_fuji/requirements.txt) lists all the necessary Python packages.
 - [template.yaml](template.yaml) defines the AWS SAM template for deploying the Lambda function.
 
