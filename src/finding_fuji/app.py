@@ -42,7 +42,9 @@ def lambda_handler(event, context):
     exported_image_bytes = export_image(photo_shoot_time)
 
     print("Detect Mt.Fuji from the image")
-    finding_fuji_result = json.loads(find_fuji(exported_image_bytes))
+    find_fuji_response = find_fuji(exported_image_bytes)
+    trimmed_response = trim_json_string(find_fuji_response)
+    finding_fuji_result = json.loads(trimmed_response)
     found_mt_fuji = finding_fuji_result.get("found_mt_fuji", False)
     comment = finding_fuji_result.get(
         "attractive_greeting_for_employees_to_come_office_seeing_the_image", "no message")
@@ -131,6 +133,15 @@ def find_fuji(image_data):
     )
     print(response.choices[0].message.content)
     return response.choices[0].message.content
+
+
+def trim_json_string(s):
+    start = s.find('{')
+    end = s.rfind('}') + 1  # +1 to include the closing '}'
+    if start != -1 and end != -1:
+        return s[start:end]
+    else:
+        raise RuntimeError
 
 
 def notify_to_slack(found_mt_fuji, comment, image_bytes, slack_bot_token, photo_upload_channel):
